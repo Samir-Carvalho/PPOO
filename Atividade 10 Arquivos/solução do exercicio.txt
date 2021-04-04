@@ -1,0 +1,248 @@
+Solução do Exercício da Atividade 1
+import java.util.Scanner;
+
+public class Principal {
+    private static HistoricoCompras hc;
+    private static Scanner entrada;
+
+    public static void main(String[] args) {
+            hc = null;
+            entrada = new Scanner(System.in);
+            int opcao;
+            do{
+              exibirMenu();
+              opcao = entrada.nextInt();
+              entrada.nextLine();
+              executarOpcao(opcao);
+            }while(opcao != 6);
+    }
+ 
+    private static void exibirMenu(){
+        System.out.println("=======MENU=======");
+        System.out.println("1 - Carregar dados de arquivo texto");
+        System.out.println("2 - Carregar dados de arquivo binario");
+        System.out.println("3 - Gerar relatorio na tela");
+        System.out.println("4 - Salvar relatorio em arquivo de texto");
+        System.out.println("5 - Gerar arquivo binario a partir de arquivo texto");
+        System.out.println("6 - Sair\n");
+        System.out.print("Digite sua opcao: ");
+    }
+   
+    private static void executarOpcao(int opcao){
+        switch(opcao){
+        case 1:
+            carregarArquivoTexto();
+            break;
+        case 2:
+            carregarArquivoBinario();
+            break;
+        case 3:
+            gerarRelatorioTela();
+            break;
+        case 4:
+            gerarRelatorioArquivoTexto();
+            break;
+        case 5:
+            gerarArquivoBinario();
+            break;
+        case 6://sair
+            break;
+        default:
+            System.out.println("Opção inválida!");
+        }
+    }
+       
+    private static void carregarArquivoTexto(){
+        hc = null;//Eliminando carregamento de arquivo anterior
+        hc = ManipuladoraArquivos.lerArquivoTexto(lerNomeArquivoTexto());
+    }
+       
+    private static void carregarArquivoBinario(){
+        hc = null;//Eliminando carregamento de arquivo anterior
+        hc = ManipuladoraArquivos.lerArquivoBinario(lerNomeArquivoBinario());
+    }
+   
+    private static void gerarArquivoBinario(){
+        hc = null;//Eliminando carregamento de arquivo anterior
+        hc = ManipuladoraArquivos.lerArquivoTexto(lerNomeArquivoTexto());
+        ManipuladoraArquivos.gerarArquivoBinario(hc,lerNomeArquivoBinario());
+    }
+   
+    private static void gerarRelatorioTela(){
+        if(hc != null){
+            hc.gerarRelatorioTela(lerCpf());
+        }else{
+            System.out.println("Carregar dados de arquivo primeiro");
+        }  
+    }
+   
+    private static void gerarRelatorioArquivoTexto() {
+        if(hc != null){
+            hc.gerarRelatorioArquivo(lerCpf());
+        }else{
+            System.out.println("Carregar dados de arquivo primeiro");
+        }
+    }
+       
+    private static String lerNomeArquivoTexto(){
+        System.out.print("Nome do arquivo texto: ");
+        return entrada.nextLine();
+    }
+   
+    private static String lerNomeArquivoBinario(){
+        System.out.print("Nome do arquivo binario: ");
+        return entrada.nextLine();
+    }
+       
+    private static String lerCpf(){
+        System.out.print("CPF: ");
+        return entrada.nextLine();
+    }
+}
+
+========================================================================================================
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+public class ManipuladoraArquivos {
+    public static HistoricoCompras lerArquivoTexto(String nomeArq){
+        HistoricoCompras hc = null;
+        try(BufferedReader arq = new BufferedReader(new FileReader(nomeArq))){
+            String linha = arq.readLine();
+            hc = new HistoricoCompras();
+            while(linha != null){
+               String[] coluna = linha.split(",");
+               Compra compra = new Compra(coluna[0],coluna[1],coluna[2],Double.parseDouble(coluna[3]));
+               hc.adicionarCompra(compra);
+               linha = arq.readLine();
+            }
+            System.out.println("Arquivo lido com sucesso!");
+        }
+        catch(FileNotFoundException e){
+           System.out.println("Arquivo " + nomeArq + " nao encontrado!");  
+        }
+        catch(IOException e){
+           System.out.println("Erro na leitura do arquivo " + nomeArq);
+        }
+        return hc;
+    }
+   
+    public static HistoricoCompras lerArquivoBinario(String nomeArq){
+        HistoricoCompras hc = null;
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(nomeArq))){
+            hc = (HistoricoCompras)ois.readObject();
+            System.out.println("Arquivo lido com sucesso!");
+        }
+        catch(FileNotFoundException e){
+           System.out.println("Arquivo " + nomeArq + " nao encontrado!");  
+        }
+        catch(Exception e){
+           System.out.println("Erro na leitura do arquivo " + nomeArq);
+        }
+        return hc;
+    }
+   
+   
+    public static void gerarArquivoBinario(HistoricoCompras hc, String nomeArq){
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(nomeArq))){
+            oos.writeObject(hc);
+            System.out.println("Arquivo gerado com sucesso!");
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
+}
+========================================================================================================
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class HistoricoCompras implements Serializable{
+    private static final long serialVersionUID = 1L;
+    private List<Compra> compras;
+   
+    public HistoricoCompras(){
+        compras = new ArrayList<>();
+    }
+   
+    public void adicionarCompra(Compra c){
+        compras.add(c);
+    }
+   
+    public void gerarRelatorioTela(String cpf){
+        Collections.sort(compras);
+        for (Compra compra : compras) {
+            if(compra.getCpf().equals(cpf)){
+                System.out.println(compra);
+            }
+        }
+    }
+   
+    public void gerarRelatorioArquivo(String nomeArq){
+        Collections.sort(compras);
+        try(FileWriter arq = new FileWriter(nomeArq+".txt")){
+            for (Compra compra : compras) {
+                if(compra.getCpf().equals(nomeArq)){
+                    arq.write(compra.toString());
+                    arq.write("\n");
+                }
+            }
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    }  
+}
+
+========================================================================================================import java.io.Serializable;
+
+public class Compra implements Comparable<Compra>, Serializable{
+    private static final long serialVersionUID = 1L;
+    private String cpf;
+    private String data;
+    private String produto;
+    private double preco;
+
+    public Compra(String cpf, String data, String produto, double preco) {
+        this.cpf = cpf;
+        this.data = data;
+        this.produto = produto;
+        this.preco = preco;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public double getPreco() {
+        return preco;
+    }
+    
+    @Override
+    public String toString() {
+        return data + ", " + produto + ", " + String.format("%.2f",preco);
+    }
+
+    @Override
+    public int compareTo(Compra c) {
+        if(getPreco() > c.getPreco()){
+            return 1;
+        }
+        else if(getPreco() < c.getPreco()){
+            return -1;
+        }
+        return 0;
+    }
+}

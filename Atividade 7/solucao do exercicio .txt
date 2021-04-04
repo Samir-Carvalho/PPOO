@@ -1,0 +1,141 @@
+Solução do Exercício da Atividade 3
+public class Principal {
+
+    public static void main(String[] args) {
+        FolhaPagamento fp = new FolhaPagamento();
+        Beneficiario ben;
+        //Cadastro de beneficiários
+        ben = new IniciativaPrivada("123.456.789-0","Tamara",90);
+        fp.cadastrarBeneficiario(ben);
+        ben = new ServicoPublico("987.654.321-0","Chico",12000.0);
+        fp.cadastrarBeneficiario(ben);
+        ben = new ForcasArmadas("234.567.890-1","Bento",15000.0);
+        fp.cadastrarBeneficiario(ben);
+        //Geração da folha de pagamentos
+        fp.gerarFolhaPagamento();  
+    }   
+}
+
+===============================================================================================================
+
+import java.util.ArrayList;
+
+public class FolhaPagamento {
+    private ArrayList<Beneficiario> beneficiarios;
+
+    public FolhaPagamento() {
+        beneficiarios = new ArrayList<>();
+    }
+    
+    public void cadastrarBeneficiario(Beneficiario ben){
+        beneficiarios.add(ben);
+    }
+    
+    public void gerarFolhaPagamento(){
+        for (Beneficiario ben : beneficiarios) {
+            System.out.println(ben);
+        }
+    }  
+}
+
+==============================================================================================================
+
+public abstract class Beneficiario {
+    private String cpf;
+    private String nome;
+
+    public Beneficiario(String cpf, String nome) {
+        this.cpf = cpf;
+        this.nome = nome;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+    
+    public abstract double calcularAposentadoria();
+    
+    @Override
+    public String toString() {
+        return "\nNome: " + getNome() + "\nCpf: " + getCpf() + "\nAposentadoria: " + String.format("%.2f",calcularAposentadoria());
+    }
+}
+
+==============================================================================================================
+
+public class IniciativaPrivada extends Beneficiario{
+    private int percentualContribuicao;
+    private static final double TETOINSS = 5645.8;
+
+    public IniciativaPrivada(String cpf, String nome, int percentualContribuicao) {
+        super(cpf, nome);
+        this.percentualContribuicao = percentualContribuicao;
+    }
+
+    @Override
+    public double calcularAposentadoria() {
+        return percentualContribuicao/100.0 * TETOINSS;
+    } 
+}
+
+============================================================================================================
+
+public class ServicoPublico extends Beneficiario implements ContribuicaoInss{
+    private double mediaSalarial;
+
+    public ServicoPublico(String cpf, String nome, double mediaSalarial) {
+        super(cpf, nome);
+        this.mediaSalarial = mediaSalarial;
+    }
+
+    @Override
+    public double calcularAposentadoria() {
+        return 0.8 * mediaSalarial;
+    }
+
+    @Override
+    public double calcularContribuicaoInss() {
+        return 0.14 * mediaSalarial;
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString() + "\nContribuicao INSS: " + String.format("%.2f",calcularContribuicaoInss());
+    }
+}
+
+==============================================================================================================
+
+public class ForcasArmadas extends Beneficiario implements ContribuicaoInss{
+    private double ultimoSalario;
+
+    public ForcasArmadas(String cpf, String nome, double ultimoSalario) {
+        super(cpf, nome);
+        this.ultimoSalario = ultimoSalario;
+    }
+
+    @Override
+    public double calcularAposentadoria() {
+        return 0.9 * ultimoSalario;
+    }
+
+    @Override
+    public double calcularContribuicaoInss() {
+        return 0.11 * ultimoSalario;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "\nContribuicao INSS: " + String.format("%.2f",calcularContribuicaoInss());
+    }
+}
+
+==============================================================================================================
+
+public interface ContribuicaoInss {
+    double calcularContribuicaoInss();
+}

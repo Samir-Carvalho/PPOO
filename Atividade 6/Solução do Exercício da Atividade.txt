@@ -1,0 +1,432 @@
+public class Programa {
+
+    public static void main(String[] args) {
+        Jogo jogo = new Jogo();
+        jogo.jogar();
+    }
+    
+}
+
+===================================================================================================================
+
+import java.util.Random;
+import java.util.Scanner;
+
+/**
+  *  Essa eh a classe principal da aplicacao "Monsters Fight".
+ *  "Monsters Fight" eh um jogo de luta bastante simples, baseado em texto.
+ *  Usuarios podem escolher personagens para lutar, ou seja, enfrentar um
+ *  adversário desconhecido.
+ *
+ *  Para jogar esse jogo, crie uma instancia dessa classe e chame o metodo
+ *  "jogar".
+ *
+ *  Essa classe principal cria e inicializa todas as outras: ela cria os
+ *  personagens, cria o analisador e comeca o jogo. Ela tambem avalia e
+ *  executa os comandos que o analisador retorna.
+ * @author Luiz Merschmann
+ * @version 29/11/2020
+ */
+public class Jogo {
+    private Analisador analisador;
+    private Personagem personagemAtual;
+    private boolean possoTransformar;
+    
+    /**
+     * Cria o jogo e o incializa.
+     */
+    public Jogo(){
+        criarPersonagens();
+        analisador = new Analisador();
+        possoTransformar = true;
+    }
+    /**
+     * Cria os personagens e define o mapa de transformacoes.
+     */
+    private void criarPersonagens(){
+        Personagem lobisomen, mumia, vampiro, zumbi, diabo;
+        
+        //Criando os personagens
+        lobisomen = new Personagem("lobisomen",4,8);
+        mumia = new Personagem("mumia",5,7);
+        vampiro = new Personagem("vampiro",6,6);
+        zumbi = new Personagem("zumbi",9,4);
+        diabo = new Personagem("diabo",8,5);
+        
+        //Definindo as transformações
+        lobisomen.definirTransformacao("vampiro", vampiro);
+        lobisomen.definirTransformacao("zumbi", zumbi);
+        mumia.definirTransformacao("lobisomen", lobisomen);
+        vampiro.definirTransformacao("mumia", mumia);
+        vampiro.definirTransformacao("zumbi", zumbi);
+        zumbi.definirTransformacao("lobisomen", lobisomen);
+        zumbi.definirTransformacao("vampiro", vampiro);
+        zumbi.definirTransformacao("diabo", diabo);
+        diabo.definirTransformacao("zumbi", zumbi);
+        
+        personagemAtual = lobisomen;//o jogo começa com o personagem "lobisomen"
+    }
+    
+    /**
+     *  Rotina principal do jogo. Loop para obtencao dos comandos.
+     */
+    public void jogar(){
+        //Mensagem inicial do jogo
+        imprimirMsgApresentacao();
+        // Entra no loop de comando principal. Repetidamente lemos
+        // comandos e os executamos.
+        boolean fim = false;
+        while(!fim){
+            Comando com = analisador.pegarComando();
+            fim = executarComando(com);
+        }
+        System.out.println("Até a próxima partida!");
+    }
+    /**
+    * Imprime a mensagem inicial do jogo.
+    */
+    private void imprimirMsgApresentacao(){
+        System.out.println("\nSeja bem-vindo ao Monsters Fight");
+        System.out.println("Monsters Fight eh um jogo de luta numa versão inicial");
+        System.out.println("Digite 'ajuda' se voce precisar");
+        
+        imprimirPersonagemAtual();
+    }
+    /**
+     * Executa um comando do jogador.
+     * @param com O Comando a ser processado.
+     * @return true se o comando finaliza o jogo.
+     */
+    private boolean executarComando(Comando com){
+        boolean querSair = false;
+        if(com.ehDesconhecido()){
+            System.out.println("Comando inválido!");
+            return false;
+        }
+        
+        String palavraDeComando = com.getPalavraDeComando();
+        if(palavraDeComando.equalsIgnoreCase("ajuda")){
+            imprimirAjuda();
+        }
+        else if(palavraDeComando.equals("transformar")){
+            if(possoTransformar){
+                transformar(com);
+            }
+            else{
+                System.out.println("Voce deve lutar antes de realizar outra transfomacao!");
+            }
+        }
+        else if(palavraDeComando.equalsIgnoreCase("lutar")){
+            querSair = lutar();
+        }
+        else if(palavraDeComando.equalsIgnoreCase("sair")){
+            querSair = sair(com);
+        }
+        else if(palavraDeComando.equalsIgnoreCase("observar")){
+            observar();
+        }
+        
+        return querSair;  
+    }
+    /**
+     * Imprime na tela as informacoes de ajuda.
+     * Aqui nos imprimimos a lista de palavras
+     * de comando validas.
+     */
+    private void imprimirAjuda() {
+        System.out.println("Suas palavras de comando sao: ");
+        System.out.println(analisador.getComandos());
+    }
+    /**
+     * Tenta transformar o jogador em outro personagem. Se a
+     * transformacao eh posivel ela eh realizada, caso contrario
+     * eh impressa uma mensagem de erro.
+     * @param com O Comando a ser processado.
+     */
+    private void transformar(Comando com) {
+        if(!com.temSegundaPalavra()){//se nao existe uma segunda palavra no comando nao eh possivel realizar a transformacao
+            System.out.println("Transformar em que? Digite transformar ...");
+        }
+        else{
+            //Obtendo a segunda palavra do comando
+            String transformacao = com.getSegundaPalavra();
+            //Tentando mudar de personagem
+            Personagem proximoPersonagem = null;
+            
+            proximoPersonagem = personagemAtual.getPersonagem(transformacao);
+           
+            if(proximoPersonagem == null){
+                System.out.println("Essa transformacao nao eh possivel!");
+            }else{
+                personagemAtual = proximoPersonagem;
+                imprimirPersonagemAtual();
+                possoTransformar = false;
+            }
+        }
+    }
+    /**
+     * Realiza a luta entre o personagem do jogador e um adversario desconhecido.
+     * Gera um adversario aleatoriamente e coloca-o para lutar com o jogador.
+     * Quem tiver as melhores habilidades (forca de ataque e defesa) tem mais chance
+     * de vencer a batalha. Se o jogador perder a batalha o jogo termina e, caso
+     * contrario, o jogo continua.
+     * @return false se o jogo deve continuar ou true caso contrario.
+     */
+    private boolean lutar() {
+        Random numAleatorio = new Random();
+        System.out.println("Lutando...");
+        int diferenca;
+        int forcaAtaqueAdversario = numAleatorio.nextInt(11);
+        int forcaDefesaAdversario = numAleatorio.nextInt(11);
+        int pesoAtaque = numAleatorio.nextInt(10);
+        int pesoDefesa = 10 - pesoAtaque;
+        diferenca = (pesoAtaque*(personagemAtual.getForcaAtaque()-forcaAtaqueAdversario)+pesoDefesa*(personagemAtual.getForcaDefesa()-forcaDefesaAdversario))/10;
+        if(diferenca >= 0){
+            System.out.println("Batalha vencida! Segue o jogo...");
+            possoTransformar = true;
+            return(false);
+        }
+        System.out.println("Infelizmente o voce perdeu a batalha e o jogo acabou!");
+        return(true);
+    }
+    /**
+     * Processa o comando "sair". Verifica o resto do comando pra
+     * verificar se queremos realmente sair do jogo.
+     * @param com O Comando a ser processado.
+     * @return true para sair do jogo ou false para continuar no mesmo.
+     */
+    private boolean sair(Comando com) {
+        if(com.temSegundaPalavra()){
+            System.out.println("Sair o que?");
+            return false;
+        }
+        return true;
+    }
+    
+    /*
+    * Codigo adicionado
+    */
+    private void imprimirPersonagemAtual() {
+        System.out.println("\nVoce eh um(a) " + personagemAtual.getDescricao());
+        System.out.println("Transformacoes possiveis: " + personagemAtual.getTransformacoes());
+    }
+
+    private void observar() {
+        imprimirPersonagemAtual();
+    }
+}
+=================================================================================================================
+
+import java.util.HashMap;
+
+/**
+ * Esta classe representa um personagem do jogo, o qual poderá participar de lutas.
+ * Cada personagem eh conectado a outros indicando as possiveis transformacoes.
+ * A principio as transformacoes sao lobisomen, mumia, vampiro e zumbi. Para
+ * cada transformacao possivel, o personagem guarda uma referencia para o outro
+ * personagem ou null se nao for possivel aquela transformacao.
+ * @author Luiz Merschmann
+ * @version 29/11/2020
+ */
+public class Personagem {
+    private String identificacao;
+    private int forcaAtaque;
+    private int forcaDefesa;
+    private HashMap<String,Personagem> transformacao;
+       
+    /**
+     * Cria um personagem com a "descricao" e habilidades (forca
+     * de ataque e defesa) passadas. Inicialmente ele não pode
+     * sofrer transformacoes.
+     * @param descricao A descricao do personagem.
+     * @param forcaAtaque A forca de ataque daquele personagem.
+     * @param forcaDefesa A forca de defesa daquele personagem.
+     */
+    public Personagem(String descricao,int forcaAtaque, int forcaDefesa) {
+        this.identificacao = descricao;
+        this.forcaAtaque = forcaAtaque;
+        this.forcaDefesa = forcaDefesa;
+        transformacao = new HashMap<String,Personagem>();
+    }
+    /**
+     * Define as transformacoes possiveis. Cada transformacao leva a um
+     * outro personagem.
+     * @param t String que identifica a transformacao.
+     * @param p Personagem da transformacao.
+     */
+    public void definirTransformacao(String t, Personagem p){
+        transformacao.put(t, p);
+    }
+    /**
+     * @return A descricao do personagem.
+     */
+    public String getDescricao() {
+        return identificacao + "\t--> Força de ataque = " + forcaAtaque+ "\tForça de defesa = " + forcaDefesa;
+    }
+    /*
+    * Código inserido
+    */
+    public Personagem getPersonagem(String t){
+        return transformacao.get(t);
+    }
+    
+    public String getTransformacoes(){
+        String textoSaida = "";
+        for(Personagem t: transformacao.values()){
+            textoSaida += "\n\t" + t.getDescricao();
+        }
+        return textoSaida;
+    }
+    
+    public int getForcaAtaque(){
+        return forcaAtaque;
+    }
+    
+    public int getForcaDefesa(){
+        return forcaDefesa;
+    }
+}
+================================================================================================================
+
+import java.util.Scanner;
+
+/**
+ * Esse analisador le a entrada do usuario e tenta interpreta-la como um
+ * comando formado por duas palavras. Ele retorna o comando como um objeto
+ * da classe Comando.
+ * O analisador consulta um conjunto de palavras de comando conhecidas. Ele
+ * compara a entrada do usuario com os comandos conhecidos e, se a entrada
+ * nao for um dos comandos conhecidos, ele retorna um objeto comando que eh
+ * marcado como um comando desconhecido.
+ * @author Luiz Merschmann
+ * @version 29/11/2020
+ */
+public class Analisador {
+    private PalavrasComando palavrasDeComando;
+    private Scanner entrada;
+
+    public Analisador() {
+        palavrasDeComando = new PalavrasComando();//contém a lista de palavras de comando válidas
+        entrada = new Scanner(System.in);
+    }
+    
+    public Comando pegarComando() {
+        String linha;
+        String palavra1 = null;
+        String palavra2 = null;
+        
+        System.out.print(">> ");//exibe o prompt
+        linha = entrada.nextLine();//lê toda linha de comando
+        //Tenta encontrar no máximo duas palavras
+        Scanner tokenizador = new Scanner(linha);
+        if(tokenizador.hasNext()){
+            palavra1 = tokenizador.next();//obtém a primeira palavra do comando
+            if(tokenizador.hasNext()){
+                palavra2 = tokenizador.next();//obtém a segunda palavra do comando
+                //Ignora o restante da linha se o comando tiver mais do que duas palavras
+            }
+        }
+        //Verifica se a primeira palavra do comando é válida
+        if(palavrasDeComando.ehComando(palavra1)){
+            return new Comando(palavra1, palavra2);//Cria um comando
+        }
+        else{
+            return new Comando(null, palavra2);//Cria um comando com null (para comando desconhecido)
+        }
+    }
+    
+    /*
+    * Código inserido
+    */
+    public String getComandos(){
+        return palavrasDeComando.getComandos();
+    }
+    
+}
+================================================================================================================
+
+/**
+ * Essa classe armazena as informacoes sobre um comando que foi digitado
+ * pelo usuario. Um comando consiste em duas strings: uma palavra
+ * de comando e uma segunda palavra (por exemplo, se a entrada for
+ * "transformar vampiro", entao as duas strings serao "transformar" e "vampiro").
+ * @author  Luiz Merschmann
+ * @version 29/11/2020
+ */
+
+public class Comando {
+    private String primeiraPalavra;
+    private String segundaPalavra;
+    /**
+     * Cria um objeto comando. Primeira e segunda palavras devem ser
+     * fornecidas, mas qualquer uma (ou ambas) podem ser null.
+     * @param primeiraPalavra A primeira palavra do comando.
+     * @param segundaPalavra A segunda palavra do comando.
+     */
+    public Comando(String primeiraPalavra, String segundaPalavra) {
+        this.primeiraPalavra = primeiraPalavra;
+        this.segundaPalavra = segundaPalavra;
+    }
+    /**
+     * Verifica se a primeira palavra do comando eh desconhecida
+     * @return true se a primeira palavra eh desconhecida.
+     */
+    public boolean ehDesconhecido() {
+        return primeiraPalavra == null;
+    }
+    /**
+     * Retorna a primeira palavra do comando.
+     * @return A primeira palavra de comando.
+     */
+    public String getPalavraDeComando() {
+        return primeiraPalavra;
+    }
+    /**
+     * Verifica se o comando tem a segunda palavra
+     * @return true se o comando tem uma segunda palavra.
+     */
+    public boolean temSegundaPalavra() {
+        return segundaPalavra != null;
+    }
+    /**
+     * Retorna a segunda palavra do comando.
+     * @return A segunda palavra de comando.
+     */
+    public String getSegundaPalavra() {
+        return segundaPalavra;
+    }
+}
+================================================================================================================
+
+/**
+ * Essa classe armazena uma lista com todos os comandos validos do jogo. Ela eh
+ * usada para se checar a validade dos comandos digitados pelo usuario.
+ * @author Luiz Merschmann
+ * @version 29/11/2020
+ */
+public class PalavrasComando {
+    private static final String[] comandosValidos = {"transformar", "lutar", "observar","sair","ajuda"};
+    /**
+     * Verifica se uma String eh uma palavra de comando valida.
+     * @return true se a string dada eh um comando valido ou false caso contrario.
+     */
+    public boolean ehComando(String palavra1) {
+        for (int i = 0; i < comandosValidos.length; i++) {
+            if(comandosValidos[i].equalsIgnoreCase(palavra1)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /*
+    * Código inserido
+    */
+    public String getComandos(){
+        String comandos="";
+        for (int i = 0; i < comandosValidos.length; i++) {
+            comandos += comandosValidos[i] + "\t";
+        }
+        return comandos;
+    }
+}

@@ -1,0 +1,123 @@
+public class Principal {
+
+    public static void main(String[] args) {
+        Sanduiche s = new PaoHamburguer("X-Burguer");
+        s = new Hamburguer(s);
+        s = new Queijo(s);
+        s = new Queijo(s);
+        
+        System.out.printf("\nSanduiche: %s \nPreco: R$ %.2f\n", s.getDescricao(), s.getPreco());
+    }
+}
+==========================================================================================================================
+
+public abstract class Sanduiche {
+    private String descricao;
+      
+    public void setDescricao(String descricao){
+        this.descricao = descricao;
+    }
+    
+    public abstract double getPreco();
+    
+    public String getDescricao(){
+        return descricao;
+    }
+}
+
+========================================================================================================================
+
+public class PaoFrances extends Sanduiche{
+
+    public PaoFrances(String descricao) {
+        setDescricao(descricao);
+    }
+
+    @Override
+    public double getPreco() {
+        return 1.5;
+    }   
+}
+
+=======================================================================================================================
+
+public class PaoHamburguer extends Sanduiche{
+    
+    public PaoHamburguer(String descricao) {
+        setDescricao(descricao);
+    }
+
+    @Override
+    public double getPreco() {
+        return 2.5;
+    }
+}
+
+=======================================================================================================================
+
+public abstract class Ingrediente extends Sanduiche{
+    private Sanduiche sand;
+
+    public Ingrediente(Sanduiche sand) {
+        this.sand = sand;
+        setDescricao(sand.getDescricao());
+    }
+    
+    public Sanduiche getSanduiche(){
+        return sand;
+    }
+}
+
+=======================================================================================================================
+
+public class Hamburguer extends Ingrediente{
+
+    public Hamburguer(Sanduiche sand) {
+        super(sand);
+    }
+
+    @Override
+    public double getPreco() {
+        return 4.0 + getSanduiche().getPreco();
+    }
+}
+
+=======================================================================================================================
+
+public class Queijo extends Ingrediente{
+    
+    public Queijo(Sanduiche sand) {
+        super(sand);
+    }
+
+    @Override
+    public double getPreco() {
+        return 2.3 + getSanduiche().getPreco();
+    }
+}
+
+=======================================================================================================================
+
+public class Tomate extends Ingrediente{
+    public Tomate(Sanduiche sand) {
+        super(sand);
+    }
+
+    @Override
+    public double getPreco() {
+        return 0.5 + getSanduiche().getPreco();
+    }
+}
+
+=======================================================================================================================
+
+public class Cebola extends Ingrediente{
+    public Cebola(Sanduiche sand) {
+        super(sand);
+    }
+
+    @Override
+    public double getPreco() {
+        return 1.3 + getSanduiche().getPreco();
+    }
+}

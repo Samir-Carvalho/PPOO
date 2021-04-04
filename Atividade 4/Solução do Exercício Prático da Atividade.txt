@@ -1,0 +1,127 @@
+import java.util.Scanner;
+
+public class Principal {
+    private static Aplicacao ap;
+    private static double valorInicial;
+    private static int tempo;
+    private static Scanner entrada = new Scanner(System.in);
+    
+    public static void main(String[] args) {
+        System.out.println("###### SIMULAÇÃO ######");
+        obterDadosIniciais();
+        System.out.println("1 - Investimento em poupança");
+        simularInvestimentoPoupanca();
+        System.out.println("2 - Investimento em CDB");
+        simularInvestimentoCdb();
+        System.out.println("3 - Investimento em ação");
+        simularInvestimentoAcao();
+    }
+    
+    private static void obterDadosIniciais(){
+        System.out.print("Entre com o valor a ser investido: ");
+        valorInicial = entrada.nextDouble();
+        System.out.print("Entre com a duração da aplicação em meses: ");
+        tempo = entrada.nextInt();
+    }
+    
+    private static void simularInvestimentoPoupanca(){
+        double selic, tr;
+        System.out.print("Entre com o valor da taxa Selic em %: ");
+        selic = entrada.nextDouble();
+        System.out.print("Entre com o valor da taxa referencial (TR) em %: ");
+        tr = entrada.nextDouble();
+        ap = new Poupanca(selic,tr,valorInicial);
+        System.out.printf("Valor final para investimento em poupanca: R$ %.2f%n",ap.calcularRetorno(tempo));
+    }
+    
+    private static void simularInvestimentoCdb(){
+        double cdi;
+        System.out.print("Entre com o valor da taxa CDI em %: ");
+        cdi = entrada.nextDouble();
+        ap = new Cdb(cdi,valorInicial);
+        System.out.printf("Valor final para investimento em CDB: R$ %.2f%n",ap.calcularRetorno(tempo));
+    }
+    
+    private static void simularInvestimentoAcao(){
+        double precoInicial, precoFinal;
+        System.out.print("Entre com o preço inicial da ação: ");
+        precoInicial = entrada.nextDouble();
+        System.out.print("Entrar com o preço final da ação: ");
+        precoFinal = entrada.nextDouble();
+        ap = new Acao(precoInicial,precoFinal,valorInicial);
+        System.out.printf("Valor final para investimento em ação: R$ %.2f%n",ap.calcularRetorno(tempo));
+    }
+}
+
+=================================================================================
+
+public class Aplicacao {
+    private double saldoInicial;
+    
+    public Aplicacao(double saldoInicial) {
+        this.saldoInicial = saldoInicial;
+    }
+
+    public double getSaldoInicial() {
+        return saldoInicial;
+    }
+    
+    public double calcularRetorno(int tempo){
+        return 0;
+    }
+}
+
+============================================================================
+
+public class Poupanca extends Aplicacao{
+    private double selic;
+    private double tr;
+
+    public Poupanca(double selic, double tr, double saldoInicial) {
+        super(saldoInicial);
+        this.selic = selic;
+        this.tr = tr;
+    }
+
+    @Override
+    public double calcularRetorno(int tempo) {
+        double rendimento = 0.7 * selic + tr;//Redimento em percentual
+        return getSaldoInicial() * Math.pow(1 + rendimento/100,tempo);
+    }  
+}
+
+========================================================================
+
+public class Cdb extends Aplicacao{
+    private double cdi;
+
+    public Cdb(double cdi, double saldoInicial) {
+        super(saldoInicial);
+        this.cdi = cdi;
+    }
+
+    @Override
+    public double calcularRetorno(int tempo) {
+        double rendimento = 1.2 * cdi;//Redimento em percentual
+        return getSaldoInicial() * Math.pow(1 + rendimento/100,tempo);
+    }  
+}
+
+==========================================================================
+
+public class Acao extends Aplicacao{
+    private double precoInicial;
+    private double precoFinal;
+
+    public Acao(double precoInicial, double precoFinal, double saldoInicial) {
+        super(saldoInicial);
+        this.precoInicial = precoInicial;
+        this.precoFinal = precoFinal;
+    }
+    
+    @Override
+    public double calcularRetorno(int tempo) {
+        double rendimento = (precoFinal/precoInicial)*100 - 100;//Redimento em percentual
+        return getSaldoInicial() * Math.pow(1 + rendimento/100,tempo);
+    }
+}

@@ -1,0 +1,68 @@
+Solução do Exercício Prático da Atividade 2
+import java.util.Scanner;
+
+public class Principal {
+
+    public static void main(String[] args) {
+        Scanner entrada = new Scanner(System.in);
+        String[] tipoCafe = {"Americano","Expresso","Sem cafeína"};
+        double[] precoCafe = {7.50,4.30,10.00};
+        double[] precoComplementos = {5.00,8.00,2.00};
+        int cod, cont = 1;
+        double valorComp = 0;
+        Cafe cafe;
+        //Entrada de dados
+        System.out.print("Digite o código do tipo do café (0: Americano/1: Expresso/2: Sem Cafeína): ");
+        cod = entrada.nextInt();
+        cafe = new Cafe(tipoCafe[cod]);//Criando um objeto café
+        System.out.print("\nDeseja adicionar algum complemento? (0: não ou 1: sim): ");
+        while(entrada.nextInt() == 1){
+            System.out.printf("\nInsira o código do %dº complemento desejado (0: leite, 1: chocolate, 2: canela):",cont);
+            cafe.adicionarComplemento(entrada.nextInt());
+            cont ++;
+            System.out.print("\nDeseja adicionar outro complemento? (0: não ou 1: sim): ");
+        }
+        //Impressão da nota fiscal
+        System.out.println("############### NOTA FISCAL ###############");
+        System.out.printf("Café: %s%n",cafe.getTipo());
+        System.out.printf("Preço do café = %.2f%n",precoCafe[cod]);
+        for (int i = 0; i < cafe.getQtdComplementos(); i++) {
+            valorComp += precoComplementos[cafe.getCodigoComplemento(i)];
+        }
+        System.out.printf("Preço dos Complementos = %.2f%n",valorComp);
+        System.out.printf("Total = %.2f%n", (precoCafe[cod] + valorComp));
+        
+        
+    }
+    
+}
+==================================================================
+
+import java.util.ArrayList;
+
+public class Cafe {
+    private String tipo;
+    private ArrayList<Integer> complementos;
+    
+    public Cafe(String tipo){
+        this.tipo = tipo;
+        complementos = new ArrayList<>();
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+    
+    public int getQtdComplementos(){
+        return complementos.size();
+    }
+    
+    public int getCodigoComplemento(int indice){
+        return complementos.get(indice);
+    }
+    
+    public void adicionarComplemento(int codigo){
+        complementos.add(codigo);
+    }
+      
+}

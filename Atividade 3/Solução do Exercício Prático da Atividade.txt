@@ -1,0 +1,119 @@
+//Solução do Exercício Prático da Atividade 1
+import java.util.Scanner;
+
+public class Principal {
+    private static Scanner ent = new Scanner(System.in);
+    private static Departamento depto = new Departamento("DAC");
+    public static void main(String[] args) {
+        int opcao = 0;
+        while(opcao != 4){
+            mostrarMenu();
+            opcao = ent.nextInt();
+            ent.nextLine();
+            executarOpcao(opcao);
+        }
+    }
+    
+    private static void mostrarMenu(){
+        System.out.println("########### SISTEMA DE CADASTRO ###########");
+        System.out.println("1 - Cadastrar nova disciplina");
+        System.out.println("2 - Remover disciplina");
+        System.out.println("3 - Listar todas as disciplinas");
+        System.out.println("4 - Sair");
+        System.out.println("Escolha o número correspondente a uma das opções anteriores:");
+    }
+    
+    private static void executarOpcao(int opcao){
+        switch(opcao){
+            case 1:
+                cadastrarDisciplina();
+                break;
+            case 2:
+                removerDisciplina();
+                break;
+            case 3:
+                listarDisciplinas();
+                break;
+            case 4://Sair
+        }
+    }
+    
+    private static void cadastrarDisciplina(){
+        System.out.print("Entre com o código da disciplina: ");
+        String codigo = ent.nextLine();
+        System.out.printf("Entre com a carga horária semanal da disciplina %s: ",codigo);
+        int cargaHorariaSemanal = ent.nextInt();
+        depto.adicionarDisciplina(new Disciplina(codigo,cargaHorariaSemanal));
+    }
+    
+    private static void removerDisciplina(){
+        System.out.print("Entre com o codigo da disciplina a ser removida: ");
+        String codigo = ent.nextLine();
+        depto.removerDisciplina(codigo);
+    }
+    
+    private static void listarDisciplinas(){
+        depto.listarDisciplinas();
+    }
+}
+
+
+===================================================================
+
+import java.util.ArrayList;
+
+public class Departamento {
+    private String sigla;
+    private ArrayList<Disciplina> disciplinas;
+
+    public Departamento(String sigla) {
+        this.sigla = sigla;
+        disciplinas = new ArrayList<Disciplina>();
+    }
+    
+    public void adicionarDisciplina(Disciplina d){
+        disciplinas.add(d);
+    }
+    
+    private Disciplina buscarDisciplina(String codigo){
+        for (Disciplina d : disciplinas) {
+            if(d.getCodigo().equals(codigo)){
+                return d;
+            }
+        }
+        return null;
+    }
+    
+    public void removerDisciplina(String codigo){
+        Disciplina d = buscarDisciplina(codigo);
+        if(d != null){
+            disciplinas.remove(d);
+        }
+    }
+    
+    public void listarDisciplinas(){
+        for (Disciplina d : disciplinas) {
+            System.out.printf("Disciplina: %s / Carga Horária Semanal: %d%n",d.getCodigo(),d.getCargaHorariaSemanal());
+        }
+    }
+}
+
+=========================================================
+
+public class Disciplina {
+    private String codigo;
+    private int cargaHorariaSemanal;
+
+    public Disciplina(String codigo, int cargaHorariaSemanal) {
+        this.codigo = codigo;
+        this.cargaHorariaSemanal = cargaHorariaSemanal;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public int getCargaHorariaSemanal() {
+        return cargaHorariaSemanal;
+    }
+}

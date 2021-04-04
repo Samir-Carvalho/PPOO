@@ -1,0 +1,71 @@
+import java.util.Scanner;
+public class CarrinhoTeste{
+  public static void main(String[] args){
+     Carrinho carrinho = new Carrinho("Luiz",24,6,2017);
+     Scanner input = new Scanner(System.in);
+     String produto;
+       
+     for(int i = 0; i < 5; i++){
+       System.out.print("Entre com o nome do produto: ");
+       produto = input.next();
+       carrinho.inserirItem(produto);
+     }
+     carrinho.exibir();
+    
+    //Testando o segundo construtor
+    Carrinho carrinho2 = new Carrinho("José",29,8,2018,3);
+    for(int i = 0; i < 3; i++){
+      System.out.print("Entre com o nome do produto: ");
+      produto = input.next();
+      carrinho2.inserirItem(produto);
+    }
+    carrinho2.exibir();
+  }
+}
+===============================================
+
+public class Carrinho{
+  private String cliente;
+  private String[] carrinho;
+  private int dia;
+  private int mes;
+  private int ano;
+  private int contadorItens;
+ 
+  public Carrinho(String cliente, int dia, int mes, int ano){
+    this.cliente = cliente;
+    this.dia = dia;
+    this.mes = mes;
+    this.ano = ano;
+    carrinho = new String[5];
+    contadorItens = 0;
+  }
+ 
+  public Carrinho(String cliente, int dia, int mes, int ano, int numeroProdutos){
+  this.cliente = cliente;
+  this.dia = dia;
+  this.mes = mes;
+  this.ano = ano;
+  carrinho = new String[numeroProdutos];
+  contadorItens = 0;
+  }
+ 
+  public String getCliente(){
+    return cliente;
+  }
+ 
+  public void inserirItem(String produto){
+    carrinho[contadorItens] = produto;
+    contadorItens++;
+  }
+ 
+  public void exibir(){
+  System.out.println("Cliente: " + cliente);
+  System.out.println("Data da compra: "+dia+"/"+mes+"/"+ano);
+  System.out.print("Itens do carrinho: ");
+    for(String i: carrinho){
+      System.out.print(i + " ");
+    }
+    System.out.println();
+  }
+}

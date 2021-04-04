@@ -1,0 +1,133 @@
+//Solução do Exercício da Atividade 1
+
+public class Programa{
+  public static void main(String[] args){
+    Extrato ext = new Extrato();
+    Despesa d1 = new Despesa(8, 2, 2018, "15:30", 500.00,"012.345.678/0001-10",3);
+    Despesa d2 = new Despesa(9, 4, 2018, "13:49", 700.00,"765.432.109/0001-10",1);
+    Receita r1 = new Receita(10, 6, 2018, "09:28", 1500.00, "123.456.789-0", "Debito");
+    Receita r2 = new Receita(11, 10, 2018, "17:00", 1000.00, "098.765.432-1", "Dinheiro");
+
+    ext.cadastrarMovimentacaoFinanceira(d1);
+    ext.cadastrarMovimentacaoFinanceira(d2);
+    ext.cadastrarMovimentacaoFinanceira(r1);
+    ext.cadastrarMovimentacaoFinanceira(r2);
+    
+    ext.gerarExtrato();
+  }
+}
+
+=============================================================================================================
+
+import java.util.ArrayList;
+public class Extrato{
+  private ArrayList<MovimentacaoFinanceira> mov;
+ 
+  public Extrato(){
+    mov = new ArrayList<>();
+  }
+ 
+  public void cadastrarMovimentacaoFinanceira(MovimentacaoFinanceira m){
+    mov.add(m);
+  }
+ 
+  public void gerarExtrato(){
+    for(MovimentacaoFinanceira m: mov){
+      System.out.println(m);
+    }
+  }
+}
+===============================================================================================================
+
+public class MovimentacaoFinanceira{
+  private static double[] taxaFixa = {100,200,300,400,500,600,700,800,900,1000,1100,1200};
+  private int dia;
+  private int mes;
+  private int ano;
+  private String horario;
+  private double valor;
+ 
+  public MovimentacaoFinanceira(int dia, int mes, int ano, String horario, double valor){
+    this.dia = dia;
+    this.mes = mes;
+    this.ano = ano;
+    this.horario = horario;
+    this.valor = valor;
+  }
+ 
+  public int getDia(){
+    return dia;
+  }
+ 
+  public int getMes(){
+    return mes;
+  }
+ 
+  public int getAno(){
+    return ano;
+  }
+ 
+  public String getHorario(){
+    return horario;
+  }
+ 
+  public double getValor(){
+    return valor;
+  }
+ 
+  public double calcularImposto(){
+    return taxaFixa[mes-1];
+  }
+}
+===============================================================================================================
+
+public class Receita extends MovimentacaoFinanceira{
+  private String cpf;
+  private String formaPagamento;
+ 
+  public Receita(int dia, int mes, int ano, String horario, double valor, String cpf, String formaPagamento){
+    super(dia, mes, ano, horario, valor);
+    this.cpf = cpf;
+    this.formaPagamento = formaPagamento;
+  }
+ 
+  @Override
+  public double calcularImposto(){
+    double imposto = super.calcularImposto();
+    if(formaPagamento.equals("Dinheiro"))
+      imposto+= 0.015 * getValor();
+    else if(formaPagamento.equals("Debito"))
+      imposto+= 0.03 * getValor();
+    else
+      imposto+= 0.04 * getValor();
+    return imposto;
+  }
+ 
+  @Override
+  public String toString(){
+    return "\nReceita recebida em: " + getDia() + "/" + getMes() + "/" + getAno() + " " + getHorario() + "\nValor: " + getValor() + "\nCPF: " + cpf + "\nForma de Pagamento: " + formaPagamento + "\nImposto a pagar: " + calcularImposto();
+  }
+}
+
+==============================================================================================================
+
+public class Despesa extends MovimentacaoFinanceira{
+  private String cnpj;
+  private int numParcelas;
+ 
+  public Despesa(int dia, int mes, int ano, String horario, double valor, String cnpj, int numParcelas){
+    super(dia, mes, ano, horario, valor);
+    this.cnpj = cnpj;
+    this.numParcelas = numParcelas;
+  }
+ 
+  @Override
+  public double calcularImposto(){
+    return super.calcularImposto() + 0.01 * numParcelas * getValor();
+  }
+ 
+  @Override
+  public String toString(){
+    return "\nDespesa realizada em: " + getDia() + "/" + getMes() + "/" + getAno() + " " + getHorario() + "\nValor: " + getValor() + "\nCNPJ: " + cnpj + "\nNúmero de Parcelas: " + numParcelas + "\nImposto a pagar: " + calcularImposto();
+  }
+}
